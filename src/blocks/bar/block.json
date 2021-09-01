@@ -1,0 +1,27 @@
+{
+	"apiVersion": 2,
+	"name": "c3/bar",
+	"title": "Bar Chart",
+	"description": "A bar chart from c3.js",
+	"keywords": [
+		"bar",
+		"chart"
+	],
+	"icon": "chart-bar",
+	"category": "charts",
+	"example": {},
+	"attributes": {},
+	"supports": {
+		"className": false,
+		"align": [
+			"wide",
+			"left",
+			"right"
+		],
+		"color": {
+			"background": true,
+			"gradients": false,
+			"text": false
+		}
+	}
+}

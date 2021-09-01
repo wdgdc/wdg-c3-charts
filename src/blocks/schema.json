@@ -1,0 +1,636 @@
+{
+	"file": {
+		"type": "integer"
+	},
+	"width": {
+		"type": "integer"
+	},
+	"height": {
+		"type": "integer"
+	},
+	"padding": {
+		"type": "object",
+		"items": {
+			"top": {
+				"type": "integer"
+			},
+			"right": {
+				"type": "integer"
+			},
+			"bottom": {
+				"type": "integer"
+			},
+			"left": {
+				"type": "integer"
+			}
+		}
+	},
+	"color": {
+		"type": "array",
+		"items": {
+			"type": "string"
+		}
+	},
+	"interaction": {
+		"type": "object",
+		"items": {
+			"enabled": {
+				"type": "boolean"
+			}
+		},
+		"default": {
+			"enabled": true
+		}
+	},
+	"transition": {
+		"type": "object",
+		"items": {
+			"duration": {
+				"type": "integer"
+			}
+		}
+	},
+	"point": {
+		"type": "object",
+		"items": {
+			"show": {
+				"type": "boolean"
+			}
+		},
+		"default": {
+			"show": true
+		}
+	},
+	"data": {
+		"type": "object",
+		"items": {
+			"url": {
+				"type": "string"
+			},
+			"json": {
+				"type": "object"
+			},
+			"rows": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"columns": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"mimeType": {
+				"type": "string"
+			},
+			"keys": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"x": {
+				"type": "string"
+			},
+			"xFormat": {
+				"type": "string"
+			},
+			"names": {
+				"type": "object"
+			},
+			"classes": {
+				"type": "object"
+			},
+			"labels": {
+				"type": "boolean"
+			},
+			"groups": {
+				"type": "array",
+				"items": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			},
+			"axes": {
+				"type": "object"
+			},
+			"type": {
+				"type": "string",
+				"enum": [
+					"line",
+					"spline",
+					"step",
+					"area",
+					"area-spline",
+					"area-step",
+					"bar",
+					"scatter",
+					"stanford",
+					"pie",
+					"donut",
+					"gauge"
+				]
+			},
+			"types": {
+				"type": "object"
+			},
+			"order": {
+				"enum": [
+					"desc",
+					"asc",
+					""
+				]
+			},
+			"selection": {
+				"type": "object",
+				"items": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"grouped": {
+						"type": "boolean"
+					},
+					"multiple": {
+						"type": "boolean"
+					},
+					"draggable": {
+						"type": "boolean"
+					}
+				}
+			}
+		},
+		"default": {
+			"groups": [],
+			"labels": false,
+			"type": "line",
+			"order": "desc",
+			"selection": {
+				"enabled": false,
+				"grouped": false,
+				"multiple": true,
+				"draggable": true
+			}
+		}
+	},
+	"legend": {
+		"type": "object",
+		"items": {
+			"show": {
+				"type": "boolean"
+			},
+			"position": {
+				"enum": [
+					"bottom",
+					"right"
+				]
+			}
+		},
+		"default": {
+			"show": true,
+			"position": "bottom"
+		}
+	},
+	"tooltip": {
+		"type": "object",
+		"items": {
+			"show": {
+				"type": "boolean"
+			},
+			"grouped": {
+				"type": "boolean"
+			}
+		},
+		"default": {
+			"show": true,
+			"grouped": false
+		}
+	},
+	"axis": {
+		"type": "object",
+		"items": {
+			"rotated": {
+				"type": "boolean"
+			},
+			"x": {
+				"show": {
+					"type": "boolean"
+				},
+				"type": {
+					"enum": [
+						"indexed",
+						"timeseries",
+						"category"
+					]
+				},
+				"localtime": {
+					"type": "boolean"
+				},
+				"categories": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"tick": {
+					"type": "object",
+					"items": {
+						"centered": {
+							"type": "boolean"
+						},
+						"format": {
+							"type": "string"
+						},
+						"culling": {
+							"type": "string"
+						},
+						"count": {
+							"type": "integer"
+						},
+						"fit": {
+							"type": "boolean"
+						},
+						"values": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"rotate": {
+							"type": "integer"
+						},
+						"outer": {
+							"type": "boolean"
+						},
+						"multiline": {
+							"type": "boolean"
+						},
+						"multilineMax": {
+							"type": "integer"
+						}
+					}
+				},
+				"max": {
+					"type": "integer"
+				},
+				"min": {
+					"type": "integer"
+				},
+				"padding": {
+					"type": "object",
+					"items": {
+						"top": {
+							"type": "integer"
+						},
+						"right": {
+							"type": "integer"
+						},
+						"bottom": {
+							"type": "integer"
+						},
+						"left": {
+							"type": "integer"
+						}
+					}
+				},
+				"height": {
+					"type": "integer"
+				},
+				"extent": {
+					"type": "array",
+					"items": {
+						"type": "integer"
+					}
+				},
+				"label": {
+					"type": "object",
+					"items": {
+						"text": {
+							"type": "string"
+						},
+						"position": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"y": {
+				"show": {
+					"type": "boolean"
+				},
+				"inner": {
+					"type": "boolean"
+				},
+				"type": {
+					"enum": [
+						"linear",
+						"timeseries",
+						"time"
+					]
+				},
+				"max": {
+					"type": "integer"
+				},
+				"min": {
+					"type": "integer"
+				},
+				"inverted": {
+					"type": "boolean"
+				},
+				"center": {
+					"type": "integer"
+				},
+				"label": {
+					"type": "object",
+					"items": {
+						"text": {
+							"type": "string"
+						},
+						"position": {
+							"type": "string"
+						}
+					}
+				},
+				"tick": {
+					"type": "object",
+					"items": {
+						"format": {
+							"type": "string"
+						},
+						"outer": {
+							"type": "boolean"
+						},
+						"values": {
+							"type": "array",
+							"items": {
+								"type": "integer"
+							}
+						},
+						"count": {
+							"type": "integer"
+						},
+						"padding": {
+							"type": "integer"
+						},
+						"default": {
+							"type": "array",
+							"items": {
+								"type": "integer"
+							}
+						}
+					}
+				},
+				"padding": {
+					"type": "object",
+					"items": {
+						"top": {
+							"type": "integer"
+						},
+						"right": {
+							"type": "integer"
+						},
+						"bottom": {
+							"type": "integer"
+						},
+						"left": {
+							"type": "integer"
+						}
+					}
+				},
+				"default": {
+					"type": "array",
+					"items": {
+						"type": "integer"
+					}
+				},
+				"primary": {
+					"type": "string"
+				},
+				"secondary": {
+					"type": "string"
+				}
+			},
+			"y2": {
+				"type": "object",
+				"items": {
+					"show": {
+						"type": "boolean"
+					},
+					"inner": {
+						"type": "boolean"
+					},
+					"type": {
+						"enum": [
+							"linear",
+							"timeseries",
+							"time"
+						]
+					},
+					"max": {
+						"type": "integer"
+					},
+					"min": {
+						"type": "integer"
+					},
+					"inverted": {
+						"type": "boolean"
+					},
+					"center": {
+						"type": "integer"
+					},
+					"label": {
+						"type": "string"
+					},
+					"tick": {
+						"type": "object",
+						"items": {
+							"format": {
+								"type": "string"
+							},
+							"outer": {
+								"type": "boolean"
+							},
+							"values": {
+								"type": "array",
+								"items": {
+									"type": "integer"
+								}
+							},
+							"count": {
+								"type": "integer"
+							}
+						}
+					},
+					"padding": {
+						"type": "object",
+						"items": {
+							"top": {
+								"type": "integer"
+							},
+							"right": {
+								"type": "integer"
+							},
+							"bottom": {
+								"type": "integer"
+							},
+							"left": {
+								"type": "integer"
+							}
+						}
+					},
+					"default": {
+						"type": "array",
+						"items": {
+							"type": "integer"
+						}
+					}
+				}
+			}
+		},
+		"default": {
+			"rotated": false,
+			"x": {
+				"show": true,
+				"type": "indexed",
+				"localtime": true,
+				"tick": {
+					"centered": false,
+					"culling": false,
+					"fit": true,
+					"outer": true,
+					"multiline": true,
+					"multilineMax": 0
+				}
+			},
+			"y": {
+				"show": true,
+				"inner": false,
+				"type": "linear",
+				"inverted": false,
+				"tick": {
+					"centered": false,
+					"culling": false
+				},
+				"primary": "",
+				"secondary": ""
+			},
+			"y2": {
+				"show": false,
+				"inner": false,
+				"type": "linear",
+				"inverted": false
+			}
+		}
+	},
+	"grid": {
+		"type": "object",
+		"items": {
+			"x": {
+				"type": "object",
+				"items": {
+					"show": {
+						"type": "boolean"
+					},
+					"lines": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"items": {
+								"value": {
+									"type": "number"
+								},
+								"text": {
+									"type": "string"
+								},
+								"position": {
+									"enum": [
+										"",
+										"middle",
+										"start"
+									]
+								}
+							}
+						}
+					}
+				}
+			},
+			"y": {
+				"type": "object",
+				"items": {
+					"show": {
+						"type": "boolean"
+					},
+					"lines": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"items": {
+								"value": {
+									"type": "number"
+								},
+								"text": {
+									"type": "string"
+								},
+								"position": {
+									"enum": [
+										"",
+										"middle",
+										"start"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"default": {
+			"x": {
+				"show": false,
+				"lines": [],
+				"type": "indexed"
+			},
+			"y": {
+				"show": false,
+				"lines": [],
+				"type": "linear"
+			}
+		}
+	},
+	"regions": {
+		"type": "array",
+		"items": {
+			"type": "object",
+			"items": {
+				"axis": {
+					"enum": [
+						"x",
+						"y",
+						"y2"
+					]
+				},
+				"start": {
+					"type": "number"
+				},
+				"end": {
+					"type": "number"
+				},
+				"class": {
+					"type": "string"
+				}
+			}
+		},
+		"default": []
+	},
+	"zoom": {
+		"type": "boolean",
+		"default": false
+	},
+	"subchart": {
+		"type": "boolean",
+		"default": false
+	}
+}

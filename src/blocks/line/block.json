@@ -1,0 +1,26 @@
+{
+	"apiVersion": 2,
+	"name": "c3/line",
+	"title": "Line Chart",
+	"description": "A line chart from c3.js",
+	"keywords": [
+		"line",
+		"chart"
+	],
+	"icon": "chart-line",
+	"category": "charts",
+	"example": {},
+	"supports": {
+		"className": false,
+		"align": [
+			"wide",
+			"left",
+			"right"
+		],
+		"color": {
+			"background": true,
+			"gradients": false,
+			"text": false
+		}
+	}
+}

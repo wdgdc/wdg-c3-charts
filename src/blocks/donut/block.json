@@ -1,0 +1,26 @@
+{
+	"apiVersion": 2,
+	"name": "c3/donut",
+	"title": "Donut Chart",
+	"description": "A donut chart from c3.js",
+	"keywords": [
+		"donut",
+		"chart"
+	],
+	"icon": "chart-line",
+	"category": "charts",
+	"example": {},
+	"supports": {
+		"className": false,
+		"align": [
+			"wide",
+			"left",
+			"right"
+		],
+		"color": {
+			"background": true,
+			"gradients": false,
+			"text": false
+		}
+	}
+}

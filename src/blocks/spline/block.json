@@ -1,0 +1,29 @@
+{
+	"apiVersion": 2,
+	"name": "c3/spline",
+	"title": "Spline Chart",
+	"description": "A spline chart from c3.js",
+	"keywords": [
+		"area",
+		"chart",
+		"spline",
+		"line"
+	],
+	"icon": "chart-line",
+	"category": "charts",
+	"example": {},
+	"attributes": {},
+	"supports": {
+		"className": false,
+		"align": [
+			"wide",
+			"left",
+			"right"
+		],
+		"color": {
+			"background": true,
+			"gradients": false,
+			"text": false
+		}
+	}
+}

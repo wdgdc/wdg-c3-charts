@@ -1,0 +1,27 @@
+{
+	"apiVersion": 2,
+	"name": "c3/pie",
+	"title": "Pie Chart",
+	"description": "A pie chart from c3.js",
+	"keywords": [
+		"pie",
+		"chart"
+	],
+	"icon": "chart-pie",
+	"category": "charts",
+	"example": {},
+	"attributes": {},
+	"supports": {
+		"className": false,
+		"align": [
+			"wide",
+			"left",
+			"right"
+		],
+		"color": {
+			"background": true,
+			"gradients": false,
+			"text": false
+		}
+	}
+}
