@@ -105,7 +105,10 @@ class BlockEditor {
 					function( $tag, $tag_handle, $src ) use ( $script, $handle ) {
 						$attr = $script['attr'];
 
-						// var_dump( $handle, $tag_handle, $attr );
+						if ( ! apply_filters( 'wdg/c3/script_defer', true ) ) {
+							$attr['defer'] = false;
+						}
+
 						if ( $handle === $tag_handle ) {
 							// don't allow defer/async in admin or customizer
 							if ( is_admin() || is_customize_preview() ) {

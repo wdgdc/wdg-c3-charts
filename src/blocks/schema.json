@@ -173,7 +173,8 @@
 				"grouped": false,
 				"multiple": true,
 				"draggable": true
-			}
+			},
+			"x": ""
 		}
 	},
 	"legend": {
@@ -245,7 +246,15 @@
 							"type": "string"
 						},
 						"culling": {
-							"type": "string"
+							"type": "object",
+							"items": {
+								"type": "object",
+								"items": {
+									"max": {
+										"type": "integer"
+									}
+								}
+							}
 						},
 						"count": {
 							"type": "integer"
@@ -312,7 +321,14 @@
 							"type": "string"
 						},
 						"position": {
-							"type": "string"
+							"enum": [
+								"inner-right",
+								"inner-center",
+								"inner-left",
+								"outer-right",
+								"outer-center",
+								"outer-left"
+							]
 						}
 					}
 				}
@@ -350,7 +366,14 @@
 							"type": "string"
 						},
 						"position": {
-							"type": "string"
+							"enum": [
+								"inner-top",
+								"inner-middle",
+								"inner-bottom",
+								"outer-top",
+								"outer-middle",
+								"outer-bottom"
+							]
 						}
 					}
 				},
@@ -366,7 +389,7 @@
 						"values": {
 							"type": "array",
 							"items": {
-								"type": "integer"
+								"type": "string"
 							}
 						},
 						"count": {
@@ -503,6 +526,9 @@
 					"outer": true,
 					"multiline": true,
 					"multilineMax": 0
+				},
+				"label": {
+					"text": ""
 				}
 			},
 			"y": {
@@ -515,7 +541,10 @@
 					"culling": false
 				},
 				"primary": "",
-				"secondary": ""
+				"secondary": "",
+				"label": {
+					"text": ""
+				}
 			},
 			"y2": {
 				"show": false,

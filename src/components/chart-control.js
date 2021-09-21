@@ -1,9 +1,35 @@
-import { InspectorControls, BlockControls, MediaReplaceFlow } from '@wordpress/block-editor';
-import { Panel, PanelBody, PanelRow, Toolbar, ToggleControl, SelectControl, Button, TextControl } from '@wordpress/components';
+import {
+	BlockControls,
+	InspectorControls,
+	MediaReplaceFlow,
+} from '@wordpress/block-editor';
+
+import {
+	BaseControl,
+	Button,
+	Flex,
+	FlexBlock,
+	FlexItem,
+	Icon,
+	Panel,
+	PanelBody,
+	PanelRow,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+	Toolbar,
+} from '@wordpress/components';
+
 import { useSelect } from '@wordpress/data';
 import CSVControl from "./csv-control.js";
 import Chart from "./chart.js";
-import _ from 'lodash';
+import {
+	cloneDeep,
+	get,
+	merge,
+	set,
+	unset,
+} from 'lodash';
 
 const allowedTypes = [ 'text/csv', 'application/vnd.ms-excel' ];
 
@@ -16,10 +42,32 @@ export default function ChartControl( {
 	const media = useSelect( select => select('core').getMedia( attributes.file ), [ attributes.file ] );
 
 	const onCSVSelect = ( file ) => {
-		const attrs = _.cloneDeep( attributes );
+		const attrs = cloneDeep( attributes );
 		attrs.file = file.id;
-		attrs.data = _.merge( attrs.data || {}, { source_url: file.source_url } );
+		attrs.data = merge( attrs.data || {}, { source_url: file.source_url } );
 		setAttributes( attrs );
+	}
+
+	const setAttr = ( attr, value ) => {
+		const attrs = cloneDeep( attributes );
+		set( attrs, attr, value );
+		setAttributes( attrs );
+	}
+
+	const setAttrs = ( attrMap = {} ) => {
+		const attrs = cloneDeep( attributes );
+		Object.keys( attrMap ).forEach( attr => set( attrs, attr, attrMap[ attr ] ) );
+		setAttributes( attrs );
+	}
+
+	const unsetAttr = ( attr ) => {
+		const attrs = cloneDeep( attributes );
+		unset( attrs, attr );
+		setAttributes( attrs );
+	}
+
+	const getAttr = ( attr, def = '' ) => {
+		return get( attributes, attr, def );
 	}
 
 	return (
@@ -28,19 +76,15 @@ export default function ChartControl( {
 				<Panel>
 					<PanelBody title="Data" initialOpen>
 						<CSVControl
-							value={ attributes.file }
+							value={ getAttr( 'file' ) }
 							onSelect={ onCSVSelect }
 						/>
 
 						<PanelRow>
 							<ToggleControl
 								label="Labels"
-								checked={ attributes.data.labels }
-								onChange={ labels => {
-									const attrs = _.cloneDeep( attributes );
-									attrs.data.labels = labels;
-									setAttributes( attrs );
-								} }
+								checked={ getAttr( 'data.labels', true ) }
+								onChange={ labels => setAttr( 'data.labels', labels ) }
 							/>
 						</PanelRow>
 					</PanelBody>
@@ -49,12 +93,8 @@ export default function ChartControl( {
 						<PanelBody title="Line Chart" initialOpen>
 							<ToggleControl
 								label="Show Points"
-								checked={ attributes.point.show }
-								onChange={ show => {
-									const attr = _.cloneDeep( attributes );
-									attr.point.show = show;
-									setAttributes( attr );
-								} }
+								checked={ getAttr( 'point.show', true ) }
+								onChange={ show => setAttr( 'point.show', show ) }
 							/>
 						</PanelBody>
 					) }
@@ -62,16 +102,12 @@ export default function ChartControl( {
 					<PanelBody title="Legend" initialOpen={ false }>
 						<ToggleControl
 							label="Legend"
-							checked={ attributes.legend.show }
-							onChange={ show => {
-								const attrs = _.cloneDeep( attributes );
-								attrs.legend.show = show;
-								setAttributes( attrs );
-							} }
+							checked={ getAttr( 'legend.show', true ) }
+							onChange={ show => setAttr( 'legend.show', show ) }
 						/>
 						<SelectControl
 							label="Legend Position"
-							value={ attributes.legend.position }
+							value={ getAttr( 'legend.position' ) }
 							options={ [
 								{
 									label: 'Bottom',
@@ -82,109 +118,318 @@ export default function ChartControl( {
 									value: 'right',
 								},
 							] }
-							onChange={ position => {
-								const attrs = _.cloneDeep( attributes );
-								attrs.legend.position = position;
-								setAttributes( attrs )
-							} }
-							disabled={ ! attributes.legend.show }
+							onChange={ position => setAttr( 'legend.position', position ) }
+							disabled={ ! getAttr( 'legend.show' ) }
 						/>
 					</PanelBody>
 
 					<PanelBody title="Tooltip" initialOpen={ false }>
 						<ToggleControl
 							label="Tooltip"
-							checked={ attributes.tooltip.show }
-							onChange={ show => {
-								const attrs = _.cloneDeep( attributes );
-								attrs.tooltip.show = show;
-								setAttributes( attrs );
-							} }
+							checked={ getAttr( 'tooltip.show', true ) }
+							onChange={ show => setAttr( 'tooltip.show', show ) }
 						/>
 						<ToggleControl
 							label="Group Tooltip"
-							checked={ attributes.tooltip.grouped }
-							onChange={ grouped => {
-								const attrs = _.cloneDeep( attributes );
-								attrs.tooltip.grouped = grouped;
-								setAttributes( attrs );
-							} }
-							disabled={ ! attributes.tooltip.show }
+							checked={ getAttr( 'tooltip.grouped', false ) }
+							onChange={ grouped => setAttr( 'tooltip.grouped', grouped ) }
+							disabled={ ! getAttr( 'tooltip.show', true ) }
 						/>
 					</PanelBody>
 
 					{ [ 'line', 'bar', 'spline', 'area', 'area-spline' ].includes( type ) && (
-						<PanelBody title="Axis" initialOpen={ false }>
-							<ToggleControl
-								label="X Axis"
-								checked={ attributes.axis.x.show }
-								onChange={ show => {
-									let attrs = _.cloneDeep( attributes );
-									attrs.axis.x.show = show;
-									setAttributes( attrs );
-								} }
-							/>
+						<>
+							<PanelBody title="X Axis" initialOpen={ false }>
+								<ToggleControl
+									label="Show"
+									checked={ getAttr( 'axis.x.show', true ) }
+									onChange={ show => setAttr( 'axis.x.show', show ) }
+								/>
 
-							<SelectControl
-								label="X Axis Type"
-								value={ attributes.axis.x.type }
-								options={ [
-									{ value: 'indexed', label: 'Default' },
-									{ value: 'timeseries', label: 'Timeseries' },
-									// { value: 'indexed', label: 'Default' },
-								] }
-								onChange={ type => {
-									let attrs = _.cloneDeep( attributes );
+								<SelectControl
+									label="Type"
+									value={ getAttr( 'axis.x.type', 'indexed' ) }
+									options={ [
+										{ value: 'indexed', label: 'Default' },
+										{ value: 'timeseries', label: 'Timeseries' },
+										{ value: 'category', label: 'Category' },
+									] }
+									onChange={ type => {
+										const attrs = cloneDeep( attributes );
+										attrs.axis.x.type = type;
 
-									attrs.axis.x.type = type;
+										if ( type === 'timeseries' ) {
+											attrs.axis.x.format = '%Y-%m-%d';
+											attrs.data.x = get( media, 'c3ChartData.headers[0]', '' );
+										} else {
+											delete attrs.axis.x.format;
+											delete attrs.data.x;
+										}
 
-									if ( type === 'timeseries' ) {
-										attrs.axis.tick.format = '%Y-%m-%d';
-									} else {
-										delete attrs.axis.tick.format;
-									}
-									setAttributes( attrs );
-								} }
-								disabled={ ! attributes.axis.x.show }
-							/>
+										setAttributes( attrs );
+									} }
+									disabled={ ! getAttr( 'axis.x.show', false ) }
+								/>
 
-							<ToggleControl
-								label="Y Axis"
-								checked={ attributes.axis.y.show }
-								onChange={ show => {
-									let attrs = _.cloneDeep( attributes );
-									attrs.axis.y.show = show;
-									setAttributes( attrs );
-								} }
-							/>
+								{ getAttr( 'axis.x.type' ) === 'category' && (
+									<BaseControl label="Categories" help="Enter the categories for the X axis labels">
+										{ getAttr( 'axis.x.categories', [] ).map( ( category, index ) => (
+											<Flex key={ index } align="center">
+												<FlexBlock>
+													<TextControl
+														value={ category }
+														onChange={ category => setAttr( `axis.x.categories[${index}]`, category ) }
+													/>
+												</FlexBlock>
+												<FlexItem>
+													<Button
+														isLink
+														isDestructive
+														onClick={ () => setAttr( 'axis.x.categories', getAttr( 'axis.x.categories' ).filter( ( cat, catIndex ) => catIndex !== index ) ) }
+														style={ { textDecoration: 'none', marginBottom: '8px' } }
+													>
+														<Icon icon="dismiss" />
+													</Button>
+												</FlexItem>
+											</Flex>
+										) ) }
 
-							{ media && media.c3ChartData && media.c3ChartData.headers && (
-								<>
-									<SelectControl
-										label="Primary Y Axis"
-										value={ attributes.axis.y.primary }
-										options={ [ { value: '', label: 'Default' } ].concat( media.c3ChartData.headers.map( header => ( { value: header, label: header } ) ) ) }
-										onChange={ primary => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.axis.y.primary = primary;
-											setAttributes( attrs );
-										} }
-										disabled={ ! attributes.axis.y.show }
-									/>
-									<SelectControl
-										label="Secondary Y Axis"
-										value={ attributes.axis.y.secondary }
-										options={ [ { value: '', label: 'None' } ].concat( media.c3ChartData.headers.map( header => ( { value: header, label: header } ) ) ) }
-										onChange={ secondary => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.axis.y.secondary = secondary;
-											setAttributes( attrs );
-										} }
-										disabled={ ! attributes.axis.y.show }
-									/>
-								</>
-							) }
-						</PanelBody>
+										<PanelRow>
+											<Button
+												isLink
+												onClick={ () => {
+													const values = [...getAttr( 'axis.x.categories', [] ) ];
+													values.push( '' );
+													setAttr( 'axis.x.categories', values );
+												} }
+											>
+												Add Category
+											</Button>
+										</PanelRow>
+									</BaseControl>
+								) }
+
+								<TextControl
+									label="Label Text"
+									value={ getAttr( 'axis.x.label.text', '' ) }
+									onChange={ text => setAttr( 'axis.x.label.text', text ) }
+								/>
+
+								<SelectControl
+									label="Label Position"
+									options={ [
+										{
+											value: 'inner-right',
+											label: 'Inner Right',
+										},
+										{
+											value: 'inner-center',
+											label: 'Inner Center',
+										},
+										{
+											value: 'inner-left',
+											label: 'Inner Left',
+										},
+										{
+											value: 'outer-right',
+											label: 'Outer Right',
+										},
+										{
+											value: 'outer-center',
+											label: 'Outer Center',
+										},
+										{
+											value: 'outer-left',
+											label: 'Outer Left',
+										},
+									] }
+									value={ getAttr( 'axis.x.label.position', 'inner-right' ) }
+									onChange={ position => setAttr( 'axis.x.label.position', position ) }
+								/>
+
+								<TextControl
+									label="Tick Culling"
+									help="Set the maximum number of ticks. 0 means all will be shown."
+									type="number"
+									value={ getAttr( 'axis.x.tick.culling.max', 0 ) }
+									onChange={ max => setAttr( 'axis.x.tick.culling.max', max ) }
+								/>
+
+								<BaseControl label="Manual Ticks" help="Manually enter the ticks to be shown. They will automatically be placed on the axis based on the available data.">
+									{ getAttr( 'axis.x.tick.values', [] ).map( ( value, index ) => (
+										<Flex key={ index } align="center">
+											<FlexBlock>
+												<TextControl
+													value={ value }
+													onChange={ value => setAttr( `axis.x.tick.values[${index}]`, value ) }
+												/>
+											</FlexBlock>
+											<FlexItem>
+												<Button
+													isLink
+													isDestructive
+													onClick={ () => {
+														// remove attribute when the last tick as c3 interprets as 0 instead of not defined
+														if ( attributes.axis.x.tick.values.length > 1 ) {
+															setAttr( 'axis.x.tick.values', attributes.axis.x.tick.values.filter( ( val, valIndex ) => valIndex !== index ) )
+														} else {
+															unsetAttr( 'axis.x.tick.values' );
+														}
+													} }
+													style={ { textDecoration: 'none', marginBottom: '8px' } }
+												>
+													<Icon icon="dismiss" />
+												</Button>
+											</FlexItem>
+										</Flex>
+									) ) }
+
+									<PanelRow>
+										<Button
+											isLink
+											onClick={ () => {
+												const values = [...getAttr( 'axis.x.tick.values', [] ) ];
+												values.push( '' );
+												setAttr( 'axis.x.tick.values', values );
+											} }
+										>
+											Add Manual Tick Value
+										</Button>
+									</PanelRow>
+								</BaseControl>
+
+								<TextControl
+									label="Tick Rotation (Degrees: 0 - 359)"
+									type="number"
+									min="0"
+									max="359"
+									value={ getAttr( 'axis.x.tick.rotate') }
+									onChange={ rotate => setAttr( 'axis.x.tick.rotate', Math.min( Math.max( rotate, 0 ), 359 ) ) }
+								/>
+
+								<ToggleControl
+									label="Multiline Tick"
+									checked={ getAttr( 'axis.x.tick.multiline', true ) }
+									onChange={ multiline => setAttr( 'axis.x.tick.multiline', multiline ) }
+								/>
+							</PanelBody>
+
+							<PanelBody title="Y Axis" initialOpen={ false }>
+								<ToggleControl
+									label="Show"
+									checked={ getAttr( 'axis.y.show', true ) }
+									onChange={ show => setAttr( 'axis.y.show', show ) }
+								/>
+
+								<TextControl
+									label="Label Text"
+									value={ getAttr( 'axis.y.label.text', '' ) }
+									onChange={ text => setAttr( 'axis.y.label.text', text ) }
+								/>
+
+								<SelectControl
+									label="Label Position"
+									options={ [
+										{
+											value: 'inner-top',
+											label: 'Inner Top',
+										},
+										{
+											value: 'inner-middle',
+											label: 'Inner Middle',
+										},
+										{
+											value: 'inner-bottom',
+											label: 'Inner Bottom',
+										},
+										{
+											value: 'outer-top',
+											label: 'Outer Top',
+										},
+										{
+											value: 'outer-middle',
+											label: 'Outer Middle',
+										},
+										{
+											value: 'outer-bottom',
+											label: 'Outer Bottom',
+										},
+									] }
+									value={ getAttr( 'axis.y.label.position', 'inner-top' ) }
+									onChange={ position => setAttr( 'axis.y.label.position', position ) }
+								/>
+
+								{ media && media.c3ChartData && media.c3ChartData.headers && (
+									<>
+										<SelectControl
+											label="Primary Y Axis"
+											value={ getAttr( 'axis.y.primary', '' ) }
+											options={ [ { value: '', label: 'Default' } ].concat( media.c3ChartData.headers.map( header => ( { value: header, label: header } ) ) ) }
+											onChange={ primary => setAttr( 'axis.y.primary', primary ) }
+											disabled={ ! getAttr( 'axis.y.show', true ) }
+										/>
+										<SelectControl
+											label="Secondary Y Axis"
+											value={ getAttr( 'axis.y.secondary' ) }
+											options={ [ { value: '', label: 'None' } ].concat( media.c3ChartData.headers.map( header => ( { value: header, label: header } ) ) ) }
+											onChange={ secondary => setAttr( 'axis.y.secondary', secondary ) }
+											disabled={ ! getAttr( 'axis.y.show', true ) }
+										/>
+									</>
+								) }
+
+								<TextControl
+									label="Tick Count"
+									help="Set the number of y axis ticks. Leave empty to automatically calculate tick values."
+									type="number"
+									value={ getAttr( 'axis.y.tick.count', 0 ) > 0 ? getAttr( 'axis.y.tick.count' ) : '' }
+									onChange={ count => setAttr( 'axis.y.tick.count', Number( count ) ) }
+								/>
+
+								<BaseControl label="Manual Ticks" help="Manually enter the ticks to be shown. They will automatically be placed on the axis based on the available data.">
+									{ getAttr( 'axis.y.tick.values', [] ).map( ( value, index ) => (
+										<Flex key={ index } align="center">
+											<FlexBlock>
+												<TextControl
+													value={ value }
+													onChange={ value => setAttr( `axis.y.tick.values[${index}]`, value ) }
+												/>
+											</FlexBlock>
+											<FlexItem>
+												<Button
+													isLink
+													isDestructive
+													onClick={ () => {
+														// remove attribute when the last tick as c3 interprets as 0 instead of not defined
+														if ( attributes.axis.y.tick.values.length > 1 ) {
+															setAttr( 'axis.y.tick.values', attributes.axis.y.tick.values.filter( ( val, valIndex ) => valIndex !== index ) )
+														} else {
+															unsetAttr( 'axis.y.tick.values' );
+														}
+													} }
+													style={ { textDecoration: 'none', marginBottom: '8px' } }
+												>
+													<Icon icon="dismiss" />
+												</Button>
+											</FlexItem>
+										</Flex>
+									) ) }
+
+									<PanelRow>
+										<Button
+											isLink
+											onClick={ () => {
+												const values = [...getAttr( 'axis.y.tick.values', [] ) ];
+												values.push( '' );
+												setAttr( 'axis.y.tick.values', values );
+											} }
+										>
+											Add Manual Tick Value
+										</Button>
+									</PanelRow>
+								</BaseControl>
+							</PanelBody>
+						</>
 					) }
 
 					{ [ 'line', 'bar', 'area', 'area-spline', 'spline' ].includes( type ) && (
@@ -192,44 +437,28 @@ export default function ChartControl( {
 							<PanelRow>
 								<ToggleControl
 									label="Show X Axis Grid"
-									checked={ attributes.grid.x.show }
-									onChange={ show => {
-										let attrs = _.cloneDeep( attributes );
-										attrs.grid.x.show = show;
-										setAttributes( attrs );
-									} }
+									checked={ getAttr( 'grid.x.show', false ) }
+									onChange={ show => setAttr( 'grid.x.show', show ) }
 								/>
 							</PanelRow>
 
-							{ attributes.grid.x && attributes.grid.x.lines && attributes.grid.x.lines.length ?
-								attributes.grid.x.lines.map( ( line, index ) => (
+							{ getAttr( 'grid.x.lines', [] ).length ?
+								getAttr( 'grid.x.lines' ).map( ( line, index ) => (
 									<div key={ index }>
 										<TextControl
 											label="Line Value"
 											value={ line.value }
-											onChange={ value => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.x.lines[ index ].value = value;
-												setAttributes( attrs );
-											} }
+											onChange={ value => setAttr( `grid.x.lines[${index}].value`, value ) }
 										/>
 										<TextControl
 											label="Line Label"
 											value={ line.text }
-											onChange={ text => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.x.lines[ index ].text = text;
-												setAttributes( attrs );
-											} }
+											onChange={ text => setAttr( `grid.x.lines[${index}].text`, text ) }
 										/>
 										<SelectControl
 											label="Label Position"
 											value={ line.position }
-											onChange={ position => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.x.lines[ index ].position = position;
-												setAttributes( attrs );
-											} }
+											onChange={ position => setAttr( `grid.x.lines[${index}].position`, position ) }
 											options={ [
 												{
 													value: '',
@@ -248,11 +477,7 @@ export default function ChartControl( {
 										<Button
 											isLink
 											isDestructive
-											onClick={ () => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.x.lines = attrs.grid.x.lines.filter( ( line, lineIndex ) => lineIndex !== index );
-												setAttributes( attrs );
-											} }
+											onClick={ () => setAttr( 'grid.x.lines', attributes.grid.x.lines.filter( ( line, lineIndex ) => lineIndex !== index ) ) }
 										>
 											Remove Grid Line
 										</Button>
@@ -266,13 +491,13 @@ export default function ChartControl( {
 								<Button
 									isLink
 									onClick={ () => {
-										let attrs = _.cloneDeep( attributes );
-										attrs.grid.x.lines.push( {
+										const lines = [...attributes.grid.x.lines];
+										lines.push( {
 											value: 0,
 											text: 'Grid Line',
 											position: ''
 										} );
-										setAttributes( attrs );
+										setAttr( 'grid.x.lines', lines );
 									} }
 								>
 									Add X Grid Line
@@ -282,44 +507,28 @@ export default function ChartControl( {
 							<PanelRow>
 								<ToggleControl
 									label="Show Gridline Y Axis"
-									checked={ attributes.grid.y.show }
-									onChange={ show => {
-										let attrs = _.cloneDeep( attributes );
-										attrs.grid.y.show = show;
-										setAttributes( attrs );
-									} }
+									checked={ getAttr( 'grid.y.show', false ) }
+									onChange={ show => setAttr( 'grid.y.show', show ) }
 								/>
 							</PanelRow>
 
-							{ attributes.grid.y && attributes.grid.y.lines && attributes.grid.y.lines.length ?
-								attributes.grid.y.lines.map( ( line, index ) => (
+							{ getAttr( 'grid.y.lines', [] ).length ?
+								getAttr( 'grid.y.lines' ).map( ( line, index ) => (
 									<div key={ index }>
 										<TextControl
 											label="Line Value"
 											value={ line.value }
-											onChange={ value => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.y.lines[ index ].value = value;
-												setAttributes( attrs );
-											} }
+											onChange={ value => setAttr( `grid.y.lines[${index}].value`, value ) }
 										/>
 										<TextControl
 											label="Line Label"
 											value={ line.text }
-											onChange={ text => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.y.lines[ index ].text = text;
-												setAttributes( attrs );
-											} }
+											onChange={ value => setAttr( `grid.y.lines[${index}].text`, value ) }
 										/>
 										<SelectControl
 											label="Label Position"
 											value={ line.position }
-											onChange={ position => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.y.lines[ index ].position = position;
-												setAttributes( attrs );
-											} }
+											onChange={ position => setAttr( `grid.x.lines[${index}].position`, position ) }
 											options={ [
 												{
 													value: '',
@@ -338,11 +547,7 @@ export default function ChartControl( {
 										<Button
 											isLink
 											isDestructive
-											onClick={ () => {
-												let attrs = _.cloneDeep( attributes );
-												attrs.grid.y.lines = attrs.grid.y.lines.filter( ( line, lineIndex ) => lineIndex !== index );
-												setAttributes( attrs );
-											} }
+											onClick={ () => setAttr( 'grid.y.lines', attributes.grid.y.lines.filter( ( line, lineIndex ) => lineIndex !== index ) ) }
 										>
 											Remove Grid Line
 										</Button>
@@ -356,13 +561,13 @@ export default function ChartControl( {
 								<Button
 									isLink
 									onClick={ () => {
-										let attrs = _.cloneDeep( attributes );
-										attrs.grid.y.lines.push( {
+										const lines = [...attributes.grid.y.lines];
+										lines.push( {
 											value: 0,
 											text: 'Grid Line',
 											position: ''
 										} );
-										setAttributes( attrs );
+										setAttr( 'grid.y.lines', lines );
 									} }
 								>
 									Add Y Grid Line
@@ -378,11 +583,7 @@ export default function ChartControl( {
 									<SelectControl
 										label="Axis"
 										value={ region.axis }
-										onChange={ value => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.regions[ index ].axis = value;
-											setAttributes( attrs );
-										} }
+										onChange={ value => setAttr( `regions[${index}].axis`, value ) }
 										options={ [
 											{
 												value: 'x',
@@ -395,36 +596,24 @@ export default function ChartControl( {
 											{
 												value: 'y2',
 												label: 'Secondary Y Axis',
-												disabled: ! attributes.axis.y.secondary
+												disabled: ! getAttr( 'axis.y.secondary', false ),
 											},
 										] }
 									/>
 									<TextControl
 										label="Start"
 										value={ region.start }
-										onChange={ start => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.regions[ index ].start = start;
-											setAttributes( attrs );
-										} }
+										onChange={ start => setAttr( `regions[${index}].start`, start ) }
 									/>
 									<TextControl
 										label="End"
 										value={ region.end }
-										onChange={ end => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.regions[ index ].end = end;
-											setAttributes( attrs );
-										} }
+										onChange={ end => setAttr( `regions[${index}].end`, end ) }
 									/>
 									<Button
 										isLink
 										isDestructive
-										onClick={ () => {
-											let attrs = _.cloneDeep( attributes );
-											attrs.regions = attrs.regions.filter( ( r, regionIndex ) => regionIndex !== index );
-											setAttributes( attrs );
-										} }
+										onClick={ () => setAttr( 'regions', attributes.regions.filter( r, regionIndex => regionIndex !== index ) ) }
 									>
 										Remove Region
 									</Button>
@@ -437,14 +626,14 @@ export default function ChartControl( {
 								<Button
 									isLink
 									onClick={ () => {
-										let attrs = _.cloneDeep( attributes );
-										attrs.regions.push( {
+										const regions = [...attributes.regions];
+										regions.push( {
 											axis: 'x',
 											start: 0,
 											end: 10,
 											class: '',
 										} );
-										setAttributes( attrs );
+										setAttr( 'regions', regions );
 									} }
 								>
 									Add Region
@@ -457,12 +646,12 @@ export default function ChartControl( {
 						<ToggleControl
 							label="Zoom Enabled"
 							checked={ attributes.zoom }
-							onChange={ zoom => setAttributes( { zoom } ) }
+							onChange={ zoom => setAttr( 'zoom', zoom ) }
 						/>
 						<ToggleControl
 							label="Sub Chart"
 							checked={ attributes.subchart }
-							onChange={ subchart => setAttributes( { subchart } ) }
+							onChange={ subchart => setAttr( 'subchart', subchart ) }
 						/>
 					</PanelBody>
 				</Panel>

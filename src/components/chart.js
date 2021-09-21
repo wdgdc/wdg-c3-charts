@@ -4,6 +4,7 @@ import { Spinner } from '@wordpress/components';
 import c3 from 'c3';
 import config from '../config.js';
 import { parseConfig } from '../helper.js';
+import { merge } from 'lodash';
 
 export default function Chart( {
 	file = 0,
@@ -16,37 +17,39 @@ export default function Chart( {
 	const ref  = useRef();
 	const [ chart, setChart ] = useState(null);
 
+	console.log( { attributes } );
+
 	useEffect( () => {
-		if ( data && data.source_url ) {
-			const chartConfig = parseConfig(
-				attributes,
-				{
-					bindto: ref.current,
-					data: Object.assign(
-						attributes.data,
-						{
-							type,
-							url: data.source_url,
-						}
-					)
-				}
-			);
+		const timeout = setTimeout( () => {
+			if ( data && data.source_url ) {
+				const chartConfig = parseConfig(
+					attributes,
+					{
+						bindto: ref.current,
+						data: merge(
+							attributes.data,
+							{
+								type,
+								url: data.source_url,
+							}
+						)
+					}
+				);
 
-			console.log( chartConfig );
+				console.log( 'chartConfig', chartConfig );
 
-			setChart( c3.generate( chartConfig ) );
-		}
+				setChart( c3.generate( chartConfig ) );
+			}
+		}, 350 );
 
 		return () => {
-			if ( chart && ref.current ) {
-				chart.destroy();
-				setChart(null);
+			if ( timeout ) {
+				clearTimeout( timeout );
 			}
 		}
 	}, [
 		data,
-		ref,
-		file,
+		ref.current,
 		attributes,
 	] );
 
