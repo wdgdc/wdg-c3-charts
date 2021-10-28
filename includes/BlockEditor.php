@@ -16,7 +16,7 @@ class BlockEditor {
 		'spline',
 	];
 
-	protected static array $colors = [
+	protected array $colors = [
 		'#1f77b4',
 		'#B84645',
 		'#B1812C',
@@ -25,11 +25,17 @@ class BlockEditor {
 		'#DCB56E',
 	];
 
+	protected array $color_schemes = [];
+
 	protected function __construct() {
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_block_editor_assets' ], 11 );
 		add_filter( 'block_categories', [ $this, 'block_categories' ], 10, 2 );
+	}
+
+	public function __callStatic( $name, $arguments ) {
+		return call_user_func_array( [ self::instance(), $name ], $arguments );
 	}
 
 	protected array $scripts = [
@@ -45,6 +51,7 @@ class BlockEditor {
 				'wp-hooks',
 				'lodash',
 			],
+			'ver'    => WDG_C3_CHARTS_VERSION,
 			'footer' => false,
 		],
 		'wdg-c3-charts-d3' => [
@@ -66,15 +73,18 @@ class BlockEditor {
 		'wdg-c3-charts' => [
 			'src'    => 'dist/render.js',
 			'deps'   => [ 'wdg-c3-charts-c3' ],
-			'ver'    => '1.0',
+			'ver'    => WDG_C3_CHARTS_VERSION,
 			'footer' => false,
 			'attr'   => [ 'defer' => true ],
 		],
 	];
 
 	public function init() {
+		$this->colors = apply_filters( 'wdg/c3/chart-colors', $this->colors );
+
 		foreach ( $this->blocks as $block ) {
 			$this->register_block( sprintf( '%s/src/blocks/%s/block.json', untrailingslashit( WDG_C3_CHARTS_DIR ), $block ) );
+			$this->color_schemes[ $block ] = apply_filters( "wdg/c3/chart-colors/$block", $this->colors, $block );
 		}
 
 		$script_debug = defined( 'SCRIPT_DEBUG' ) && empty( constant( 'SCRIPT_DEBUG' ) );
@@ -154,7 +164,6 @@ class BlockEditor {
 			'script' => 'wdg-c3-charts',
 		];
 
-
 		$directory = dirname( $path );
 		$view      = $directory . '/view.php';
 
@@ -198,25 +207,61 @@ class BlockEditor {
 	public function get_block_editor_config() {
 		return [
 			'color' => [
-				'pattern' => self::$colors
-			]
+				'pattern' => $this->colors
+			],
+			'schemes' => $this->color_schemes,
 		];
 	}
 
-	public static function render( $type, $attributes ) {
-		if ( empty( $attributes['data']['url'] ) && ! empty( $attributes['file'] ) ) {
-			$attributes['data']['url'] = wp_get_attachment_url( $attributes['file'] );
+	public function render( $type, $attributes, $caption = '' ) {
+		if ( isset( $attributes['data']['url'] ) ) {
+			unset( $attributes['data']['url'] );
 		}
 
-		$attributes['data']['type']     = $type;
-		$attributes['color']['pattern'] = apply_filters( 'c3_chart_colors', self::$colors, $attributes['data']['type'] );
+		if ( ! empty( $attributes['file'] ) ) {
+			$attributes['data']['rows'] = \WDG\C3Charts\API::instance()->get_csv_data( $attributes['file'] );
+		}
 
-		$config = apply_filters( 'c3_chart_config', $attributes, $type );
+		$data = isset( $attributes['file'] ) ? get_post_meta( $attributes['file'], '_wdg_c3_charts', true ) : [];
+
+		$attributes['data']['type']     = $type;
+		$attributes['color']['pattern'] = $this->color_schemes[ $type ] ?? $this->colors;
+
+		// special handling for custom x axis tick labels
+		if ( isset( $attributes['axis']['x']['type'] ) && isset( $data->firstColumn ) ) {
+			if ( isset( $data->firstColumn ) ) {
+				array_shift( $data->firstColumn );
+			}
+
+			if ( 'first-column' === $attributes['axis']['x']['type'] ) {
+				$attributes['axis']['x']['type'] = 'category';
+				$attributes['axis']['x']['categories'] = $data->firstColumn;
+				$attributes['data']['rows'] = array_map( fn( $row ) => array_slice( $row, 1 ), $attributes['data']['rows'] );
+
+				unset( $attributes['data']['url'] );
+			}
+		}
+
+		$config = apply_filters( 'wdg/c3/chart-config', $attributes, $type );
+
+		if ( isset( $config['caption'] ) ) {
+			unset( $config['caption'] );
+		}
+
+		if ( empty( $attributes['data']['url'] ) && empty( $attributes['data']['json'] ) && empty( $attributes['data']['rows'] ) ) {
+			printf(
+				'<figure class="wdg-c3-chart wdg-c3-chart--error" data-type="%1$s">%2$s</figure>%3$s',
+				esc_attr( $attributes['data']['type'] ),
+				is_user_logged_in() ? '<mark>Invalid Chart Data</mark> ' : '<!-- Invalid Chart Data --> ' . $caption,
+				"\n"
+			);
+		}
 
 		printf(
-			'<figure class="c3-chart c3-chart--%1$s" data-type="%1$s" data-c3-config=\'%2$s\'></figure>%3$s',
+			'<figure class="wdg-c3-chart wdg-c3-chart--%1$s" data-type="%1$s" data-c3-config=\'%2$s\'>%3$s</figure>%4$s',
 			esc_attr( $attributes['data']['type'] ),
 			wp_json_encode( $config ),
+			$caption,
 			"\n"
 		);
 	}

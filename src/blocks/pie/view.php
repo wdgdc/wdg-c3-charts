@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'pie', $attributes );
+\WDG\C3Charts\BlockEditor::render( 'pie', $attributes, $content );

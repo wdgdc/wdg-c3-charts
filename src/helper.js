@@ -1,8 +1,8 @@
 import defaultConfig from './config.js';
+import { createBlock } from '@wordpress/blocks';
 
 export function parseConfig( config, custom = {} ) {
-	const chartConfig = Object.assign( defaultConfig, config, custom );
-	// console.log( 1, {chartConfig} );
+	const chartConfig = Object.assign( {}, defaultConfig, config, custom );
 
 	chartConfig.data.axes = chartConfig.data.axes || {};
 
@@ -19,7 +19,28 @@ export function parseConfig( config, custom = {} ) {
 		}
 	}
 
-	// console.log( 2, {chartConfig} );
+	// ignoring caption
+	if ( chartConfig.hasOwnProperty('caption') ) {
+		delete chartConfig.caption;
+	}
 
 	return chartConfig;
+}
+
+export const chartTypes = [
+	'c3/area-spline',
+	'c3/area',
+	'c3/bar',
+	'c3/donut',
+	'c3/line',
+	'c3/pie',
+	'c3/spline',
+];
+
+export function getBlockTransform( blockType ) {
+	return {
+		type: 'block',
+		blocks: chartTypes.filter( chartType => chartType !== blockType ),
+		transform: ( attributes ) => createBlock( blockType, attributes ),
+	}
 }

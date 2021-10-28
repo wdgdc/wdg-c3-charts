@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'area', $attributes );
+\WDG\C3Charts\BlockEditor::render( 'area', $attributes, $content );

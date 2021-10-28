@@ -3,15 +3,15 @@
  * Charts with c3.js
  *
  * @package   c3-charts
- * @link      https://github.com/wdgdc/c3-charts
+ * @link      https://github.com/wdgdc/wdg-c3-charts
  * @author    WDG
  * @copyright 2021 Web Development Group
- * @license   GPL v3
+ * @license   MIT
  *
  * Plugin Name:  c3 Charts
  * Description:  Charting Library with c3.js
- * Version:      1.1.0
- * Plugin URI:   https://github.com/wdgdc/c3-charts
+ * Version:      1.2.2
+ * Plugin URI:   https://github.com/wdgdc/wdg-c3-charts
  * Author:       Web Development Group
  * Author URI:   https://www.wdg.co
  * Text Domain:  c3-charts
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-define( 'WDG_C3_CHARTS_VERSION', '1.1.0' );
+define( 'WDG_C3_CHARTS_VERSION', '1.2.2' );
 
 if ( ! defined( 'WDG_C3_CHARTS_DIR' ) ) {
 	define( 'WDG_C3_CHARTS_DIR', __DIR__ );

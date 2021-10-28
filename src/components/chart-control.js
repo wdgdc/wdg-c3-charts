@@ -87,6 +87,15 @@ export default function ChartControl( {
 								onChange={ labels => setAttr( 'data.labels', labels ) }
 							/>
 						</PanelRow>
+
+						<PanelRow>
+							<ToggleControl
+								label="Rotate Axes"
+								checked={ getAttr( 'axis.rotated' ) }
+								onChange={ rotated => setAttr( 'axis.rotated', rotated ) }
+								help="Switch the X/Y axis. Use this for example to create a horizontal bar chart."
+							/>
+						</PanelRow>
 					</PanelBody>
 
 					{ [ 'line' ].includes( type ) && (
@@ -153,6 +162,7 @@ export default function ChartControl( {
 										{ value: 'indexed', label: 'Default' },
 										{ value: 'timeseries', label: 'Timeseries' },
 										{ value: 'category', label: 'Category' },
+										{ value: 'first-column', label: 'First Column' },
 									] }
 									onChange={ type => {
 										const attrs = cloneDeep( attributes );
@@ -506,7 +516,7 @@ export default function ChartControl( {
 
 							<PanelRow>
 								<ToggleControl
-									label="Show Gridline Y Axis"
+									label="Show Y Axis Grid"
 									checked={ getAttr( 'grid.y.show', false ) }
 									onChange={ show => setAttr( 'grid.y.show', show ) }
 								/>

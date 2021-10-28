@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'area-spline', $attributes );
+\WDG\C3Charts\BlockEditor::render( 'area-spline', $attributes, $content );

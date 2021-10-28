@@ -1,11 +1,13 @@
 import block from './block.json';
 import schema from '../schema.json';
 import { registerBlockType } from '@wordpress/blocks';
-import { InspectorControls, BlockControls, useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, RichText } from '@wordpress/block-editor';
 import ChartControl from "../../components/chart-control.js";
-import { PanelBody, Toolbar, ToggleControl, Spinner } from '@wordpress/components';
+import { PanelBody, ToggleControl, Spinner } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import _ from 'lodash';
+import save from '../../components/save.js';
+import { getBlockTransform } from '../../helper.js';
 
 block.attributes = _.merge( _.cloneDeep( schema ), block.attributes || {} );
 
@@ -27,7 +29,6 @@ block.edit = ( { attributes, setAttributes } ) => {
 								onChange={ checked => {
 									const attr = cloneDeep( attributes );
 									attr.data = attr.data || {};
-									console.log( { attr } );
 									attr.data.groups = checked ? [ media.c3ChartData.headers ] : [];
 									setAttributes( attr );
 								} }
@@ -35,12 +36,30 @@ block.edit = ( { attributes, setAttributes } ) => {
 						) : <Spinner /> }
 					</PanelBody>
 				) }
-
+			/>
+			<RichText
+				tagName="figcaption"
+				className="c3-chart__caption"
+				value={ attributes.caption }
+				onChange={ caption => setAttributes( { caption } ) }
+				allowedFormats={ [
+					'core/link',
+					'core/bold',
+					'core/italic',
+				] }
+				placeholder="Chart caption..."
+				keepPlaceholderOnFocus
 			/>
 		</figure>
 	);
 }
 
-block.save = () => null;
+block.save = save;
+
+block.transforms = {
+	from: [
+		getBlockTransform( block.name ),
+	],
+}
 
 registerBlockType( block.name, block );

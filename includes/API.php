@@ -22,10 +22,52 @@ class API {
 	 */
 	public function rest_prepare_attachment( $response, $post, $request ) {
 		if ( 'text/csv' === get_post_mime_type( $post->ID ) ) {
-			$response->data['c3ChartData'] = get_post_meta( $post->ID, '_wdg_c3_charts', true );
+			$response->data['c3ChartData']      = (object) get_post_meta( $post->ID, '_wdg_c3_charts', true );
+			$response->data['c3ChartData']->raw = $this->get_csv_data( $post->ID );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Remove any non printable characters from a string
+	 *
+	 * @param string $str
+	 * @return string
+	 */
+	protected static function remove_non_visible_chars( $str ) {
+		return preg_replace( '/[^[:print:]]/', '', $str );
+	}
+
+	/**
+	 * Get the raw csv data for an attachment
+	 *
+	 * @param int $attachment_id
+	 * @return array
+	 */
+	public static function get_csv_data( $attachment_id = null ) {
+		$attachment_id = $attachment_id ?? get_the_ID();
+		$attached_file = get_attached_file( $attachment_id );
+
+		$handle = fopen( $attached_file, 'r' );
+		$data = [];
+
+		if ( false !== $handle ) {
+			while ( ! feof( $handle ) ) {
+				$row = fgetcsv( $handle );
+
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+
+				$row = array_map( [ __CLASS__, 'remove_non_visible_chars' ] , $row );
+				array_push( $data, $row );
+			}
+
+			fclose( $handle );
+		}
+
+		return $data;
 	}
 
 	/**
@@ -42,9 +84,10 @@ class API {
 
 		$attached_file = get_attached_file( $attachment_id );
 
-		$data          = new \StdClass();
-		$data->count   = 0;
-		$data->headers = [];
+		$data              = new \StdClass();
+		$data->count       = 0;
+		$data->headers     = [];
+		$data->firstColumn = [];
 
 		$handle = fopen( $attached_file, 'r' );
 
@@ -53,12 +96,20 @@ class API {
 		}
 
 		while ( ! feof( $handle ) ) {
-			$data->count++;
-			$line = fgets( $handle );
+			$row = fgetcsv( $handle );
+
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$data->count++; // keep the line count
+			$row = array_map( [ __CLASS__, 'remove_non_visible_chars' ], $row ); // remove non-visible characters
 
 			if ( 1 === $data->count ) {
-				$data->headers = array_map( fn( $header ) => preg_replace( '/[^[:print:]]/', '', $header ), explode( ',', $line ) );
+				$data->headers = $row; // save the first line as headers
 			}
+
+			array_push( $data->firstColumn, current( $row ) ); // save the first column
 		}
 
 		fclose( $handle );

@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'line', $attributes );
+\WDG\C3Charts\BlockEditor::render( 'line', $attributes, $content );
