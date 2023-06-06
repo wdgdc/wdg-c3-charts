@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'donut', $attributes, $content );
+\WDG\C3Charts\BlockEditor::instance()->render( 'donut', $attributes, $content );

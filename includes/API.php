@@ -2,10 +2,21 @@
 
 namespace WDG\C3Charts;
 
+/**
+ * The API class add csv metadata to the rest api response
+ *
+ * @package wdg-c3-charts
+ * @author kshaner
+ */
 class API {
 
 	use SingletonTrait;
 
+	/**
+	 * Hook into wordpress on API constuct
+	 *
+	 * @return API
+	 */
 	protected function __construct() {
 		add_filter( 'rest_prepare_attachment', [ $this, 'rest_prepare_attachment' ], 10, 3 );
 		add_action( 'attachment_updated', [ $this, 'update_csv_metadata' ] );

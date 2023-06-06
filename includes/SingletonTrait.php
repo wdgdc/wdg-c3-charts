@@ -4,17 +4,17 @@ namespace WDG\C3Charts;
 
 trait SingletonTrait {
 
-	/**
-	 * Get the instance of the called class
+    /**
+	 * Get the singleton instance of the class that uses this trait
 	 *
 	 * @param mixed $args
-	 * @return \StdClass
+	 * @return static
 	 */
 	public static function instance() {
 		static $instance;
 
 		if ( ! isset( $instance ) ) {
-			$instance = new static( func_get_args() );
+			$instance = new static( ...func_get_args() );
 		}
 
 		return $instance;

@@ -1,2 +1,2 @@
 <?php
-\WDG\C3Charts\BlockEditor::render( 'spline', $attributes, $content );
+\WDG\C3Charts\BlockEditor::instance()->render( 'spline', $attributes, $content );

@@ -32,7 +32,11 @@ export default function CSVControl( {
 										icon="media-spreadsheet"
 										isSecondary
 										isBusy={ value && ! media }
-										style={ { width: '100%', justifyContent: 'center' } }
+										style={ {
+											width         : '100%',
+											justifyContent: 'flex-start',
+											overflow      : 'hidden',
+										} }
 									>
 										{ media ? media.source_url.split('/').pop() : <Spinner /> }
 									</Button>

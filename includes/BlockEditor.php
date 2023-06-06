@@ -2,10 +2,21 @@
 
 namespace WDG\C3Charts;
 
+/**
+ * The BlockEditor class registers and manages block registration, assets, and rendering
+ *
+ * @package wdg-c3-charts
+ * @author kshaner
+ */
 class BlockEditor {
 
 	use SingletonTrait;
 
+	/**
+	 * The list of supported blocks
+	 *
+	 * @var array
+	 */
 	protected array $blocks = [
 		'area',
 		'area-spline',
@@ -13,9 +24,15 @@ class BlockEditor {
 		'donut',
 		'line',
 		'pie',
+		'scatter',
 		'spline',
 	];
 
+	/**
+	 * The default color scheme
+	 *
+	 * @var array
+	 */
 	protected array $colors = [
 		'#1f77b4',
 		'#B84645',
@@ -25,22 +42,33 @@ class BlockEditor {
 		'#DCB56E',
 	];
 
+	/**
+	 * Holds per chart color schemes by key => hex codes
+	 *
+	 * @var array
+	 */
 	protected array $color_schemes = [];
 
+	/**
+	 * Hook into wordpress
+	 *
+	 * @return BlockEditor
+	 */
 	protected function __construct() {
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_block_editor_assets' ], 11 );
-		add_filter( 'block_categories', [ $this, 'block_categories' ], 10, 2 );
+		add_filter( 'block_categories_all', [ $this, 'block_categories' ], 10, 2 );
 	}
 
-	public function __callStatic( $name, $arguments ) {
-		return call_user_func_array( [ self::instance(), $name ], $arguments );
-	}
-
+	/**
+	 * Script data to be registered
+	 *
+	 * @var array
+	 */
 	protected array $scripts = [
 		'wdg-c3-charts-block-editor' => [
-			'src'    => 'dist/index.js',
+			'src'    => WDG_C3_CHARTS_URI . '/dist/index.js',
 			'deps'   => [
 				'wdg-c3-charts-d3',
 				'wdg-c3-charts-c3',
@@ -51,34 +79,51 @@ class BlockEditor {
 				'wp-hooks',
 				'lodash',
 			],
-			'ver'    => WDG_C3_CHARTS_VERSION,
 			'footer' => false,
 		],
 		'wdg-c3-charts-d3' => [
-			'src'    => 'dist/d3/d3.min.js',
-			'debug'  => 'dist/d3/d3.js',
-			'deps'   => '',
+			'src'    => WDG_C3_CHARTS_URI . '/dist/d3/d3.min.js',
+			'debug'  => WDG_C3_CHARTS_URI . '/dist/d3/d3.js',
 			'ver'    => '5.16.0',
 			'footer' => false,
 			'attr'   => [ 'defer' => true ],
 		],
 		'wdg-c3-charts-c3' => [
-			'src'    => 'dist/c3/c3.min.js',
-			'debug'  => 'dist/c3/c3.js',
+			'src'    => WDG_C3_CHARTS_URI . '/dist/c3/c3.min.js',
+			'debug'  => WDG_C3_CHARTS_URI . '/dist/c3/c3.js',
 			'deps'   => [ 'wdg-c3-charts-d3' ],
 			'ver'    => '0.7.20',
 			'footer' => false,
 			'attr'   => [ 'defer' => true ],
 		],
 		'wdg-c3-charts' => [
-			'src'    => 'dist/render.js',
+			'src'    => WDG_C3_CHARTS_URI . '/dist/render.js',
 			'deps'   => [ 'wdg-c3-charts-c3' ],
-			'ver'    => WDG_C3_CHARTS_VERSION,
 			'footer' => false,
 			'attr'   => [ 'defer' => true ],
 		],
 	];
 
+	/**
+	 * Style data to be registered
+	 */
+	protected array $styles = [
+		'wdg-c3-charts-c3' => [
+			'src' => WDG_C3_CHARTS_URI . '/dist/c3/c3.css',
+			'media' => 'all',
+		],
+		'wdg-c3-charts' => [
+			'src'   => WDG_C3_CHARTS_URI . '/src/index.css',
+			'deps'  => [ 'wdg-c3-charts-c3' ],
+			'media' => 'all',
+		],
+	];
+
+	/**
+	 * Register blocks and assets (init action)
+	 *
+	 * @return void
+	 */
 	public function init() {
 		$this->colors = apply_filters( 'wdg/c3/chart-colors', $this->colors );
 
@@ -89,24 +134,14 @@ class BlockEditor {
 
 		$script_debug = defined( 'SCRIPT_DEBUG' ) && empty( constant( 'SCRIPT_DEBUG' ) );
 
-		foreach ( $this->scripts as $handle => $script ) {
+		foreach ( $this->scripts as $handle => &$script ) {
 			if ( $script_debug && ! empty( $script_debug['debug'] ) ) {
 				$script['src'] = $script['debug'];
 
 				$script['ver'] = filemtime( $this->path . '/' . $script['src'] );
-			} else if ( empty( $script['ver'] ) ) {
-				$script['ver'] = WDG_C3_CHARTS_VERSION;
 			}
 
-			$script['src'] = rtrim( WDG_C3_CHARTS_URI, '/' ) . '/' . ltrim( $script['src'], '/' );
-
-			wp_register_script(
-				$handle,
-				$script['src'],
-				$script['deps'] ?? [],
-				$script['ver'],
-				$script['footer'] ?? false,
-			);
+			wp_register_script( $handle, $script['src'] ?? '', $script['deps'] ?? [], $script['ver'] ?? WDG_C3_CHARTS_VERSION, $script['footer'] ?? false );
 
 			if ( ! empty( $script['attr'] ) ) {
 				// apply custom attributes on the script tag
@@ -145,10 +180,18 @@ class BlockEditor {
 			}
 		}
 
-		wp_register_style( 'wdg-c3-charts-c3', WDG_C3_CHARTS_URI . '/dist/c3/c3.css', [], WDG_C3_CHARTS_VERSION, 'all' );
-		wp_register_style( 'wdg-c3-charts', WDG_C3_CHARTS_URI . '/dist/index.css', [ 'wdg-c3-charts-c3' ], WDG_C3_CHARTS_VERSION, 'all' );
+		foreach ( $this->styles as $handle => $style ) {
+			wp_register_style( $handle, $style['src'] ?? '', $style['deps'] ?? [], $style['ver'] ?? WDG_C3_CHARTS_VERSION, $style['media'] ?? 'all' );
+		}
 	}
 
+	/**
+	 * Register a block by path with arguments and default callbacks & assets
+	 *
+	 * @param string $path
+	 * @param array $args
+	 * @return \WP_Block_Type|false
+	 */
 	protected function register_block( $path, $args = [] ) {
 		static $schema;
 
@@ -160,12 +203,11 @@ class BlockEditor {
 
 		$args = [
 			'attributes' => array_merge( $schema, $block['attributes'] ?? [] ),
-			'style' => 'wdg-c3-charts',
-			'script' => 'wdg-c3-charts',
+			'style'      => 'wdg-c3-charts',
+			'script'     => 'wdg-c3-charts',
 		];
 
-		$directory = dirname( $path );
-		$view      = $directory . '/view.php';
+		$view = dirname( $path ) . '/view.php';
 
 		if ( file_exists( $view ) ) {
 			$args['render_callback'] = function( $attributes, $content, $block ) use ( $view ) {
@@ -175,14 +217,24 @@ class BlockEditor {
 			};
 		}
 
-		register_block_type( $block['name'], $args );
+		return register_block_type( $block['name'], $args );
 	}
 
+	/**
+	 * Enqueue the front end scripts
+	 *
+	 * @return void
+	 */
 	public function wp_enqueue_scripts() {
 		wp_enqueue_script( 'wdg-c3-charts' );
 		wp_enqueue_style( 'wdg-c3-charts' );
 	}
 
+	/**
+	 * Enqueue assets for the block editor
+	 *
+	 * @return void
+	 */
 	public function enqueue_block_editor_assets() {
 		wp_add_inline_script( 'wdg-c3-charts-block-editor', sprintf( 'var wdg = wdg || {}; wdg.charts = wdg.charts || {}; wdg.charts.config = %s', wp_json_encode( $this->get_block_editor_config() ) ), 'before' );
 		wp_enqueue_script( 'wdg-c3-charts-block-editor' );
@@ -191,6 +243,10 @@ class BlockEditor {
 
 	/**
 	 * add a chart block category
+	 *
+	 * @param array $categories
+	 * @param \WP_Post $post
+	 * @return array
 	 */
 	public function block_categories( $categories, $post ) {
 		array_unshift(
@@ -204,6 +260,11 @@ class BlockEditor {
 		return $categories;
 	}
 
+	/**
+	 * Get config for the block-editor scripts
+	 *
+	 * @return array
+	 */
 	public function get_block_editor_config() {
 		return [
 			'color' => [
@@ -213,6 +274,14 @@ class BlockEditor {
 		];
 	}
 
+	/**
+	 * Render the chart via block callback proxy
+	 *
+	 * @param string $type - chart type
+	 * @param array $attributes - block attributes that hold c3 configuration
+	 * @param string $caption - block caption including figcaption
+	 * @return void
+	 */
 	public function render( $type, $attributes, $caption = '' ) {
 		if ( isset( $attributes['data']['url'] ) ) {
 			unset( $attributes['data']['url'] );
@@ -244,25 +313,52 @@ class BlockEditor {
 
 		$config = apply_filters( 'wdg/c3/chart-config', $attributes, $type );
 
+		// unset config irrelevant to c3
+		$config = array_diff_key( $config, array_flip( [ 'file' ] ) );
+
 		if ( isset( $config['caption'] ) ) {
 			unset( $config['caption'] );
 		}
 
+		$error = false;
+
 		if ( empty( $attributes['data']['url'] ) && empty( $attributes['data']['json'] ) && empty( $attributes['data']['rows'] ) ) {
-			printf(
-				'<figure class="wdg-c3-chart wdg-c3-chart--error" data-type="%1$s">%2$s</figure>%3$s',
-				esc_attr( $attributes['data']['type'] ),
-				is_user_logged_in() ? '<mark>Invalid Chart Data</mark> ' : '<!-- Invalid Chart Data --> ' . $caption,
-				"\n"
-			);
+			$error = new \WP_Error( 'invalid-chart-data', 'Invalid Chart Data' );
+			$attributes['data']['type'] = 'error';
 		}
 
-		printf(
-			'<figure class="wdg-c3-chart wdg-c3-chart--%1$s" data-type="%1$s" data-c3-config=\'%2$s\'>%3$s</figure>%4$s',
-			esc_attr( $attributes['data']['type'] ),
-			wp_json_encode( $config ),
-			$caption,
-			"\n"
-		);
+		printf( '<figure class="wdg-c3-chart wdg-c3-chart--%1$s" data-type="%1$s">' . "\n", esc_attr( $attributes['data']['type'] ) );
+
+		if ( in_array( $attributes['data']['type'], [ 'area', 'area-spline', 'bar', 'line', 'spline' ], true ) && ( ! empty( $attributes['chartLabel'] ) || ! empty( $attributes['chartLabel2'] ) ) ) :
+			echo "\t" . '<div class="wdg-c3-chart__labels">' . "\n";
+
+			if ( ! empty( $attributes['chartLabel'] ) ) :
+				printf( "\t\t" . '<p class="wdg-c3-chart__label wdg-c3-chart__label--1">%s</p>' . "\n", wp_kses_post( $attributes['chartLabel'] ) );
+			endif;
+
+			if ( ! empty( $attributes['chartLabel2'] ) ) :
+				printf( "\t\t" . '<p class="wdg-c3-chart__label wdg-c3-chart__label--2">%s</p>' . "\n", wp_kses_post( $attributes['chartLabel2'] ) );
+			endif;
+
+			echo "\t" . '</div>' . "\n";
+		endif;
+
+		if ( is_wp_error( $error ) ) :
+			if ( is_user_logged_in() && current_user_can( 'edit_others_posts' ) ) :
+				$format = '<mark>%s</mark>';
+			else:
+				$format = '<!-- %s -->';
+			endif;
+
+			printf( $format . "\n", $error->get_error_message() );
+		else:
+			printf( "\t" . '<script type="application/json">%s</script>' . "\n", wp_json_encode( $config ) );
+		endif;
+
+		if ( ! empty( $caption ) ) :
+			echo "\t" . wp_kses_post( trim( $caption ) ) . "\n";
+		endif;
+
+		echo "</figure>\n";
 	}
 }

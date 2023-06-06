@@ -5,11 +5,16 @@
 	"caption": {
 		"type": "string"
 	},
-	"width": {
-		"type": "integer"
-	},
-	"height": {
-		"type": "integer"
+	"size": {
+		"type": "object",
+		"items": {
+			"width": {
+				"type": "integer"
+			},
+			"height": {
+				"type": "integer"
+			}
+		}
 	},
 	"padding": {
 		"type": "object",
@@ -25,13 +30,37 @@
 			},
 			"left": {
 				"type": "integer"
+			},
+			"auto": {
+				"type": "boolean"
 			}
+		},
+		"default": {
+			"auto": true
 		}
 	},
 	"color": {
-		"type": "array",
+		"type": "object",
 		"items": {
-			"type": "string"
+			"pattern": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"threshhold": {
+				"type": "string"
+			}
+		},
+		"default": {
+			"pattern": [
+				"#1f77b4",
+				"#B84645",
+				"#B1812C",
+				"#046C9D",
+				"#9FA1A8",
+				"#DCB56E"
+			]
 		}
 	},
 	"interaction": {
@@ -210,7 +239,7 @@
 		},
 		"default": {
 			"show": true,
-			"grouped": false
+			"grouped": true
 		}
 	},
 	"axis": {
@@ -288,10 +317,10 @@
 					}
 				},
 				"max": {
-					"type": "integer"
+					"type": "number"
 				},
 				"min": {
-					"type": "integer"
+					"type": "number"
 				},
 				"padding": {
 					"type": "object",
@@ -353,10 +382,10 @@
 					]
 				},
 				"max": {
-					"type": "integer"
+					"type": "number"
 				},
 				"min": {
-					"type": "integer"
+					"type": "number"
 				},
 				"inverted": {
 					"type": "boolean"
@@ -438,7 +467,10 @@
 					"type": "string"
 				},
 				"secondary": {
-					"type": "string"
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
 				}
 			},
 			"y2": {
@@ -458,10 +490,10 @@
 						]
 					},
 					"max": {
-						"type": "integer"
+						"type": "number"
 					},
 					"min": {
-						"type": "integer"
+						"type": "number"
 					},
 					"inverted": {
 						"type": "boolean"
@@ -470,7 +502,22 @@
 						"type": "integer"
 					},
 					"label": {
-						"type": "string"
+						"type": "object",
+						"items": {
+							"text": {
+								"type": "string"
+							},
+							"position": {
+								"enum": [
+									"inner-top",
+									"inner-middle",
+									"inner-bottom",
+									"outer-top",
+									"outer-middle",
+									"outer-bottom"
+								]
+							}
+						}
 					},
 					"tick": {
 						"type": "object",
@@ -522,7 +569,7 @@
 			"rotated": false,
 			"x": {
 				"show": true,
-				"type": "indexed",
+				"type": "first-column",
 				"localtime": true,
 				"tick": {
 					"centered": false,
@@ -546,6 +593,10 @@
 					"centered": false,
 					"culling": false
 				},
+				"padding": {
+					"top": 3,
+					"bottom": 0
+				},
 				"primary": "",
 				"secondary": "",
 				"label": {
@@ -557,7 +608,14 @@
 				"show": false,
 				"inner": false,
 				"type": "linear",
-				"inverted": false
+				"inverted": false,
+				"padding": {
+					"top": 3
+				},
+				"label": {
+					"text": "",
+					"position": "outer-middle"
+				}
 			}
 		}
 	},
@@ -590,6 +648,13 @@
 								}
 							}
 						}
+					},
+					"stroke": {
+						"type": "string",
+						"enum": [
+							"",
+							"dashed"
+						]
 					}
 				}
 			},
@@ -619,6 +684,13 @@
 								}
 							}
 						}
+					},
+					"stroke": {
+						"type": "string",
+						"enum": [
+							"",
+							"dashed"
+						]
 					}
 				}
 			}
@@ -627,12 +699,14 @@
 			"x": {
 				"show": false,
 				"lines": [],
-				"type": "indexed"
+				"type": "indexed",
+				"stroke": ""
 			},
 			"y": {
 				"show": true,
 				"lines": [],
-				"type": "linear"
+				"type": "linear",
+				"stroke": ""
 			}
 		}
 	},
@@ -668,5 +742,42 @@
 	"subchart": {
 		"type": "boolean",
 		"default": false
+	},
+	"chartLabel": {
+		"type": "string"
+	},
+	"chartLabel2": {
+		"type": "string"
+	},
+	"download": {
+		"type": "boolean",
+		"default": true
+	},
+	"downloadText": {
+		"type": "string",
+		"default": "Download chart"
+	},
+	"downloadName": {
+		"type": "string",
+		"default": "chart"
+	},
+	"trend": {
+		"type": "object",
+		"items": {
+			"show": {
+				"type": "boolean",
+				"default": false
+			},
+			"label": {
+				"type": "string"
+			},
+			"col": {
+				"type": "string"
+			}
+		},
+		"default": {
+			"show": false,
+			"label": "Trend"
+		}
 	}
 }
